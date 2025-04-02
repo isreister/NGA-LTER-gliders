@@ -42,7 +42,9 @@
 %Author: Isaac Reister 4/1/2025
 
 %Record:   
-%V4 Cleaning up the comments for release to UAF glider group.
+%V4 Cleaning up the comments for release to UAF glider group. Commiting to
+%github. interploating the flight resolved glider currents to the science
+%variables times.
 
 %V3 2-25-2025 For some reason, mission 8 (the summer stationkeeping,
 %wouldn't process with the AllgliderDataV2. This was fixed when I resaved
@@ -72,8 +74,8 @@
 clear all
 close all
 
-load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\AllgliderDataV2.mat','AllGliderVariables')
-load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\AllgliderFli_DataV2.mat','AllGliderFliVariables')
+load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\AllgliderDataV3.mat','AllGliderVariables')
+load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\AllgliderFli_DataV3.mat','AllGliderFliVariables')
 
 %% user inputs
 missionset=[1:8];
@@ -134,6 +136,21 @@ end
 
 T=AllGliderVariables{3}; %redefine T now that limits have been applied.
 
+
+%% Interploate glider currents and add to AllGliderVariables.
+    initialnumberofvariables=length(AllGliderVariables);
+    for eachmission=1:length(T)
+            flitimes=AllGliderFliVariables{1}{eachmission};
+            missionu=AllGliderFliVariables{4}{eachmission};
+            missionv=AllGliderFliVariables{5}{eachmission}; 
+            dontwant=isnan(missionu);
+            flitimes(dontwant)=[];
+            missionu(dontwant)=[];
+            missionv(dontwant)=[];
+
+            AllGliderVariables{initialnumberofvariables+1}{eachmission}=interp1(flitimes,missionu,AllGliderVariables{3}{eachmission},'linear');
+            AllGliderVariables{initialnumberofvariables+2}{eachmission}=interp1(flitimes,missionv,AllGliderVariables{3}{eachmission},'linear');
+    end
 
 %% Turing point identifier.
 
@@ -290,7 +307,7 @@ end
 
 
 
-save('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlider_AllGliderProfileSplit_v3.mat',"downcasts","upcasts","AllGliderVariables");
+save('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlider_AllGliderProfileSplit_v4.mat',"downcasts","upcasts","AllGliderVariables");
 
 %the start and stop of ascending and descending profiles has now been
 %obtained.
