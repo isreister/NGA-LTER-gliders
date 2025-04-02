@@ -33,6 +33,9 @@
     %this will produce a very long column vector.
 
 % Author: Isaac Reister 3/31/2025
+%V3 made the code extract glider currents in addition to the other variables.
+    % also moved the sanity check plot to the end and improved the
+    % limiting of the data a little bit.
 %V2 cleaned up comments for UAF glider group
 %V1 intial creation
 clear all
@@ -83,8 +86,15 @@ missioncolors=jet(length(datarepo));
     geominLON=211;
     geomaxLON=211.5;
    
+    %Enter here where your desired spatial limits for the glider.
+    mymaxlat=90;
+    mymaxlon=-130;
+    myminlat=50;
+    myminlon=-150;
 
-
+    % use this to make a very simple plot of the latitudes.
+   sanitycheckplot=0; %1 yes make this plot. 0 no.
+   
     %% Load data, Standardize variable names, and create cell arrays for variables.
     for ix=1:length(datarepo)
         load([myroot,datarepo{ix}]);
@@ -148,8 +158,9 @@ missioncolors=jet(length(datarepo));
         Dflidates{ix}=fli.gtime;
         Dflidepth{ix}=fli.depth;
         Dfliinflections{ix}=fli.inflecting;
+        Dfliu{ix}=fli.u;
+        Dfliv{ix}=fli.v;
         
-   
        
 %note that the sci depth has a higher resolution than the fli depth.
 
@@ -187,40 +198,7 @@ missioncolors=jet(length(datarepo));
     % m_gshhs_h('patch',[ 1.0000    1.0000    0.8196]);%mellow yellow
     % m_grid('xlabeldir','end','fontsize',10,'YaxisLocation','left','FontSize',14);
     
-for ix=1:length(datarepo)
 
-    outofrangelat=(Dlat{ix}>61.5) | (Dlat{ix}<40);
-    outofrangelon=(Dlon{ix}>-130) | (Dlon{ix}<-150);
-
-    outofrange=outofrangelat+outofrangelon;
-    outofrange(outofrange==2)=1; %makeing it so true+true=2;
-    outofrange=logical(outofrange);
-
-
-    Dlat{ix}(outofrange)=nan;
-    Dlon{ix}(outofrange)=nan;
-
-    datemaxes{ix}=datetime(Ddatemax{ix},'ConvertFrom','datenum');
-    datemins{ix}=datetime(Ddatemin{ix},'ConvertFrom','datenum');
-
-    % Format the datetime to character strings
-    dateRange{ix} = strcat(datestr(datemins{ix}, 'mm/dd'), ' - ', datestr(datemaxes{ix}, ' mm/dd/yyyy'));
-    mysize=10;
-    trancolor=missioncolors(ix,:);
-    figure(1)
-    hold on
-    % m_scatter(goldgaklonlat(:,1)+360,goldgaklonlat(:,2),20,'Marker','o','MarkerFacecolor','y')
-    % m_scatter(Dlon{ix}+360,Dlat{ix},mysize,'Marker','o','MarkerFacecolor',trancolor,'MarkerEdgecolor',trancolor,'MarkerFaceAlpha',.3,'MarkerEdgeAlph',.3);
-    hold off
-    figure(2)
-    hold on
-    mhandle{ix}=plot(datetime(Dscidates{ix},'ConvertFrom','datenum'),Dlat{ix},'Color',trancolor,'LineWidth',2);
-    hold off
-    display(dateRange{ix})
- 
-end
-ylim([58.5,60])
-legend([mhandle{1:end}], dateRange{1:end})
 
 
 
@@ -231,10 +209,16 @@ for ix=1:length(datarepo)
     %remove non-NGA data
 
 
-    outofrangelat=(Dlat{ix}>90) | (Dlat{ix}<40);
-    outofrangelon=(Dlon{ix}>-130) | (Dlon{ix}<-150);
+    datemaxes{ix}=datetime(Ddatemax{ix},'ConvertFrom','datenum');
+    datemins{ix}=datetime(Ddatemin{ix},'ConvertFrom','datenum');
 
+    % Format the datetime to character strings
+    dateRange{ix} = strcat(datestr(datemins{ix}, 'mm/dd'), ' - ', datestr(datemaxes{ix}, ' mm/dd/yyyy'));
 
+    outofrangelat=(Dlat{ix}>mymaxlat) | (Dlat{ix}<myminlat);
+    outofrangelon=(Dlon{ix}>mymaxlon) | (Dlon{ix}<myminlon);
+
+    display(['Processing file ' char(string(ix)),' ',dateRange{ix}])
 
     outofrange=outofrangelat+outofrangelon;
     outofrange(outofrange==2)=1;
@@ -291,6 +275,36 @@ for ix=1:length(datarepo)
     
  
 end
+
+% sanity check plot of just latitudes.
+if sanitycheckplot==1
+    for ix=1:length(datarepo)
+    
+        DdatemaxNEW{ix}=max(mydatenums{ix});
+        DdateminNEW{ix}=min(mydatenums{ix});
+    
+        datemaxes{ix}=datetime(DdatemaxNEW{ix},'ConvertFrom','datenum');
+        datemins{ix}=datetime(DdateminNEW{ix},'ConvertFrom','datenum');
+    
+        % Format the datetime to character strings
+        dateRange{ix} = strcat(datestr(datemins{ix}, 'mm/dd'), ' - ', datestr(datemaxes{ix}, ' mm/dd/yyyy'));
+        mysize=10;
+        trancolor=missioncolors(ix,:);
+        figure(1)
+        hold on
+        mhandle{ix}=plot(datetime(Dscidates{ix},'ConvertFrom','datenum'),lats{ix},'Color',trancolor,'LineWidth',2);
+        hold off
+        display(dateRange{ix})
+     
+    end
+%ylim([58.5,60])
+legend([mhandle{1:end}], dateRange{1:end})
+end
+
+
+
+
+
 %sci variables.
 AllGliderVariables{1}=lats;
 AllGliderVariables{2}=lons;
@@ -307,8 +321,10 @@ AllGliderVariables{11}=cdom;
 AllGliderFliVariables{1}=Dflidates;
 AllGliderFliVariables{2}=Dflidepth;
 AllGliderFliVariables{3}=Dfliinflections;
-save([myoutput,'AllgliderDataV2.mat'],'AllGliderVariables')
-save([myoutput,'AllgliderFli_DataV2.mat'],'AllGliderFliVariables')
+AllGliderFliVariables{4}=Dfliu;
+AllGliderFliVariables{5}=Dfliv;
+save([myoutput,'AllgliderDataV3.mat'],'AllGliderVariables')
+save([myoutput,'AllgliderFli_DataV3.mat'],'AllGliderFliVariables')
 
 
 
