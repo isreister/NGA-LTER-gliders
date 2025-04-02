@@ -35,7 +35,7 @@
 % Author: Isaac Reister 3/31/2025
 %V3 made the code extract glider currents in addition to the other variables.
     % also moved the sanity check plot to the end and improved the
-    % limiting of the data a little bit.
+    % limiting of the data a little bit. Did this commit work?
 %V2 cleaned up comments for UAF glider group
 %V1 intial creation
 clear all
