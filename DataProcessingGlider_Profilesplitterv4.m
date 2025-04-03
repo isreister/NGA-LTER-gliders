@@ -74,11 +74,17 @@
 clear all
 close all
 
-load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\AllgliderDataV3.mat','AllGliderVariables')
-load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\AllgliderFli_DataV3.mat','AllGliderFliVariables')
+
 
 %% user inputs
+
+
 missionset=[1:8];
+
+where_data_was_saved='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\';
+where_I_want_data_saved='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\';
+where_I_want_figures_saved='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\prelim\';
+
 
 %% Setting up our time limits
 %The limits below partition the glider missions into transecting and
@@ -90,6 +96,10 @@ missionset=[1:8];
 %is not part of these date limits), though some stationkeeping gliders
 %(particuarly mission 7 got blown around a lot and will need some further
 %editing using a radius from the GEO mooring. 
+load([where_data_was_saved,'AllgliderDataV3.mat'],'AllGliderVariables')
+load([where_data_was_saved,'AllgliderFli_DataV3.mat'],'AllGliderFliVariables')
+
+
 
 Timelimits{1}=[datenum(datetime(2021,01,20,00,00,00)),datenum(datetime(2021,05,05,00,00,00))]; %PWS stationkeeping
 Timelimits{2}=[datenum(datetime(2022,02,14,00,00,00)),datenum(datetime(2022,03,02,00,00,00))]; %transecting
@@ -296,7 +306,7 @@ set(gca,'YDir','reverse')
 ylabel('Depth (m)')
 xlabel('Casts')
 set(gcf,"Position",[25.6667 193 1.6373e+03 420])
-saveas(figure(1),['C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\prelim\Mission ', char(string(eachmission)),'.png'])
+saveas(figure(1),[where_I_want_figures_saved,'Mission ', char(string(eachmission)),'.png'])
 hold off
 close all
 clear deepI
@@ -307,7 +317,7 @@ end
 
 
 
-save('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlider_AllGliderProfileSplit_v4.mat',"downcasts","upcasts","AllGliderVariables");
+save([where_I_want_data_saved,'DataProcessingGlider_AllGliderProfileSplit_v4.mat'],"downcasts","upcasts","AllGliderVariables");
 
 %the start and stop of ascending and descending profiles has now been
 %obtained.
