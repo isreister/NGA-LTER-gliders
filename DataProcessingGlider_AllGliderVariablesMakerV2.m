@@ -35,7 +35,7 @@
 % Author: Isaac Reister 3/31/2025
 %V3 made the code extract glider currents in addition to the other variables.
     % also moved the sanity check plot to the end and improved the
-    % limiting of the data a little bit. Did this commit work?
+    % limiting of the data a little bit.
 %V2 cleaned up comments for UAF glider group
 %V1 intial creation
 clear all
@@ -302,7 +302,14 @@ legend([mhandle{1:end}], dateRange{1:end})
 end
 
 
-
+%basic range based QC to remove impossible values
+for ix=1:length(datarepo)
+ chl{ix}(chl{ix}<0)=nan; %chl cant be less than zero
+ sal{ix}(sal{ix}<0)=nan;
+ sal{ix}(sal{ix}>40)=nan;
+ temp{ix}(temp{ix}<-3)=nan;
+ temp{ix}(temp{ix}>45)=nan;
+end
 
 
 %sci variables.
