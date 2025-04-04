@@ -14,19 +14,21 @@
     % AllGliderVariables{2}=lons;
     % AllGliderVariables{3}=mydatenums;
     % AllGliderVariables{4}=chl;
-    % AllGliderVariables{5}=dep;
-    % AllGliderVariables{6}=sal;
+    % AllGliderVariables{5}=pres;
+    % AllGliderVariables{6}=cond;
     % AllGliderVariables{7}=temp;
     % AllGliderVariables{8}=par;
     % AllGliderVariables{9}=scatter;
     % AllGliderVariables{10}=do_c;
     % AllGliderVariables{11}=cdom;
+    % 
+    % 
     % %flight variables.
     % AllGliderFliVariables{1}=Dflidates;
-    % AllGliderFliVariables{2}=Dflidepth;
-    % AllGliderFliVariables{3}=Dfliinflections;
-    % AllGliderFliVariables{4}=Dfliu;
-    % AllGliderFliVariables{5}=Dfliv;
+    % AllGliderFliVariables{2}=Dfliu;
+    % AllGliderFliVariables{3}=Dfliv;
+save([myoutput,'AllgliderDataV3.mat'],'AllGliderVariables')
+save([myoutput,'AllgliderFli_DataV3.mat'],'AllGliderFliVariables')
 % Level 2
     %Each variable is a cell array wherein the a number of cells that correspond to
     %however many missions were processed in 'DataProcessingGlider_AllGliderVariablesMakerV2.m
@@ -248,8 +250,7 @@ end
             if strcmp(Standardnames_units{eachvarIwant,1},'press')
                 if true(containsSubstring) & (length(sci.(unreliable_fieldname))>1)
                     Dpres{ix}=sci.(unreliable_fieldname);
-                    Ddepth{ix}=-1.*gsw_z_from_p(10*sci.(unreliable_fieldname),60); % assume NGA lats.
-                else
+                    else
                     Dpres{ix}=[];
                     display(['ERROR:No Pressure for mission ',char(string(ix))])
                     return
@@ -394,7 +395,6 @@ for ix=1:length(datarepo2)
     lotemp=Dlon{ix};
     scidatetemp=Dscidates{ix};
     chltemp=Dchl{ix};
-    deptemp=Ddepth{ix};
     saltemp=Dsal{ix};
     temptemp=Dtemp{ix};
     partemp=Dpar{ix};
@@ -408,7 +408,6 @@ for ix=1:length(datarepo2)
     lotemp(outofrangelat)=nan;
     scidatetemp(outofrangelat)=nan;
     chltemp(outofrange)=nan;
-    deptemp(outofrange)=nan;
     saltemp(outofrange)=nan;
     temptemp(outofrange)=nan;
     bbtemp(outofrange)=nan;
@@ -435,7 +434,6 @@ for ix=1:length(datarepo2)
     lons{ix}= lotemp;
     mydatenums{ix}= scidatetemp;
     chl{ix}= chltemp;
-    dep{ix}= deptemp;
     sal{ix}= saltemp;
     temp{ix}= temptemp;
     par{ix}= partemp;
@@ -482,17 +480,19 @@ PSAL=[2,41];
 DOX1=[0,650]; %umol l^-1
 CPHL=[0,100]; %mg m%-3
 CDOM=[0,400]; 
-IRRAD=[0,1000]; %uW cm^-2 nm^-1
+IRRAD=[0,5000]; %(microEinstein per square meter per second)';
 UCUR=[-10,10]; %m/s
 VCUR=[-10,10]; %m/s
 
-
+%%
 
 
 %basic range based QC to remove impossible values
 for ix=1:length(datarepo2)
+
+
  cond{ix}(cond{ix}<CNDC(1) | cond{ix}>CNDC(2))=nan;
- temp{ix}(cond{ix}<CNDC(1) | cond{ix}>CNDC(2))=nan;
+ temp{ix}(temp{ix}<CNDC(1) | temp{ix}>CNDC(2))=nan;
  pres{ix}(pres{ix}<PRES(1) | pres{ix}>PRES(2))=nan;
  scatter{ix}(scatter{ix}<BBP(1) | scatter{ix}>BBP(2))=nan;
  sal{ix}(sal{ix}<PSAL(1) | sal{ix}>PSAL(2))=nan;
@@ -503,27 +503,30 @@ for ix=1:length(datarepo2)
  Dfliu{ix}(Dfliu{ix}<UCUR(1) | Dfliu{ix}>UCUR(2))=nan;
  Dfliv{ix}(Dfliv{ix}<VCUR(1) | Dfliv{ix}>VCUR(2))=nan;
  
+ 
 end
 
 
-%sci variables.
+
+%sci variables.(any more than this and MATLAB can't save it as a single
+%file.
 AllGliderVariables{1}=lats;
 AllGliderVariables{2}=lons;
 AllGliderVariables{3}=mydatenums;
 AllGliderVariables{4}=chl;
-AllGliderVariables{5}=dep;
-AllGliderVariables{6}=sal;
+AllGliderVariables{5}=pres;
+AllGliderVariables{6}=cond;
 AllGliderVariables{7}=temp;
 AllGliderVariables{8}=par;
 AllGliderVariables{9}=scatter;
 AllGliderVariables{10}=do_c;
 AllGliderVariables{11}=cdom;
+
+
 %flight variables.
 AllGliderFliVariables{1}=Dflidates;
-AllGliderFliVariables{2}=Dflidepth;
-AllGliderFliVariables{3}=Dfliinflections;
-AllGliderFliVariables{4}=Dfliu;
-AllGliderFliVariables{5}=Dfliv;
+AllGliderFliVariables{2}=Dfliu;
+AllGliderFliVariables{3}=Dfliv;
 save([myoutput,'AllgliderDataV3.mat'],'AllGliderVariables')
 save([myoutput,'AllgliderFli_DataV3.mat'],'AllGliderFliVariables')
 

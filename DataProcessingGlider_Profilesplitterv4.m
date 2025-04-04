@@ -5,17 +5,19 @@
     % AllGliderVariables{2}=lons;
     % AllGliderVariables{3}=mydatenums;
     % AllGliderVariables{4}=chl;
-    % AllGliderVariables{5}=dep;
-    % AllGliderVariables{6}=sal;
+    % AllGliderVariables{5}=pres;
+    % AllGliderVariables{6}=cond;
     % AllGliderVariables{7}=temp;
     % AllGliderVariables{8}=par;
     % AllGliderVariables{9}=scatter;
     % AllGliderVariables{10}=do_c;
     % AllGliderVariables{11}=cdom;
+    % 
+    % 
     % %flight variables.
     % AllGliderFliVariables{1}=Dflidates;
-    % AllGliderFliVariables{2}=Dflidepth;
-    % AllGliderFliVariables{3}=Dfliinflections;
+    % AllGliderFliVariables{2}=Dfliu;
+    % AllGliderFliVariables{3}=Dfliv;
 % Level 2
     %Each variable is a cell array wherein the a number of cells that correspond to
     %however many missions were processed in 'DataProcessingGlider_AllGliderVariablesMakerV2.m
@@ -151,8 +153,8 @@ T=AllGliderVariables{3}; %redefine T now that limits have been applied.
     initialnumberofvariables=length(AllGliderVariables);
     for eachmission=1:length(T)
             flitimes=AllGliderFliVariables{1}{eachmission};
-            missionu=AllGliderFliVariables{4}{eachmission};
-            missionv=AllGliderFliVariables{5}{eachmission}; 
+            missionu=AllGliderFliVariables{2}{eachmission};
+            missionv=AllGliderFliVariables{3}{eachmission}; 
             dontwant=isnan(missionu);
             flitimes(dontwant)=[];
             missionu(dontwant)=[];
@@ -165,14 +167,13 @@ T=AllGliderVariables{3}; %redefine T now that limits have been applied.
 %% Turing point identifier.
 
 
-scidepths=AllGliderVariables{5};
 scitimes=AllGliderVariables{3};
 
 for eachmission=1:length(T)
  
 
     
-    missionalldepths=scidepths{eachmission}; %for this mission
+    missionalldepths=-1.*gsw_z_from_p(10*AllGliderVariables{5}{eachmission},60); % assume NGA lats.AllGliderVariables{5};
     alldepthsindex=1:length(missionalldepths);
 
     missionalltimes=scitimes{eachmission};
