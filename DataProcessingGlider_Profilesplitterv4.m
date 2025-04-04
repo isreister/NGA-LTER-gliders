@@ -169,7 +169,7 @@ scidepths=AllGliderVariables{5};
 scitimes=AllGliderVariables{3};
 
 for eachmission=1:length(T)
-
+ 
 
     
     missionalldepths=scidepths{eachmission}; %for this mission
@@ -261,7 +261,7 @@ for eachmission=1:length(T)
     deepvalue(isnan(deepI))=[];
     deepI(isnan(deepI))=[];
 
-    if sum(fakedeep)>0 %if any fake deeps exist.
+    if sum(fakedeep)>0 %if any fake deeps exist. %
         for eachdeeppair=1:length(deepI)-1
             possiblybadsurface=find((surfaceI>=deepI(eachdeeppair)) & (surfaceI<=deepI(eachdeeppair+1))); %find all surfaceI inbetween deep pairs
             if length(possiblybadsurface)>1
@@ -283,36 +283,51 @@ for eachmission=1:length(T)
         end
     end
 
-surfacevalue(isnan(surfaceI))=[];
-surfaceI(isnan(surfaceI))=[];
 
-downcasts{eachmission}=[surfaceI(1:end-1).',deepI.'];
-upcasts{eachmission}=[deepI.',surfaceI(2:end).'];
+    %the mission has to end at the surface. identify the surface point
+    %after the last deep point. remove any later surface values, as only
+    %reflect recovery weirdness.
 
-%
+    lastsurface=find(surfaceI>deepI(end),1,'first');
+    surfaceI(surfaceI>surfaceI(lastsurface))=nan;
+    surfacevalue(isnan(surfaceI))=[];
+    surfaceI(isnan(surfaceI))=[];
+
+    downcasts{eachmission}=[surfaceI(1:end-1).',deepI.'];
+    upcasts{eachmission}=[deepI.',surfaceI(2:end).'];
+    % if you see an error here it's because the for some reason there is a
+    % mismatch between surfacing index and deep index. The plot and code directly below it can be a
+    % good start
+    
+    % figure;plot(convrtdt(T{eachmission}(surfaceI)),missionalldepths(surfaceI),'-o')
+    % hold on
+    % plot(convrtdt(T{eachmission}(deepI)),missionalldepths(deepI),'-o')
+    % turntimes=[convrtdt(T{eachmission}(deepI)).',convrtdt(T{eachmission}(surfaceI)).'];
+    % [mytimes, mytimesindex]=sort(turntimes);
+    %
 
 
-%sanity check plot. depths less than 10 are the orange line. Surface turning points are
-%idenfied as yellow dots, and purples points are deep turning
-%points. Note that this code does not set a required 'full depth profile'
-%because often missions have staggered depths (200 meters for 3 dives, 40
-%meters for another). We don't want to delete a well resolved surface
-%layer. Also in a shallow areas like PWS that method wont work at all.
-figure(1)
-hold on
-plot(surfaceI,surfacevalue,'Marker','o','LineStyle','none','MarkerFaceColor',[ 0.9294    0.6941    0.1255]) %this looks really good.
-plot(deepI,deepvalue,'o') %this looks really good.
-set(gca,'YDir','reverse')
-ylabel('Depth (m)')
-xlabel('Casts')
-set(gcf,"Position",[25.6667 193 1.6373e+03 420])
-saveas(figure(1),[where_I_want_figures_saved,'Mission ', char(string(eachmission)),'.png'])
-hold off
-close all
-clear deepI
-clear deepvalue
-clear surfaceI
-clear surfacevalue
+    %sanity check plot. depths less than 10 are the orange line. Surface turning points are
+    %idenfied as yellow dots, and purples points are deep turning
+    %points. Note that this code does not set a required 'full depth profile'
+    %because often missions have staggered depths (200 meters for 3 dives, 40
+    %meters for another). We don't want to delete a well resolved surface
+    %layer. Also in a shallow areas like PWS that method wont work at all.
+    figure(1)
+    hold on
+    plot(surfaceI,surfacevalue,'Marker','o','LineStyle','none','MarkerFaceColor',[ 0.9294    0.6941    0.1255]) %this looks really good.
+    plot(deepI,deepvalue,'o') %this looks really good.
+    set(gca,'YDir','reverse')
+    ylabel('Depth (m)')
+    xlabel('Casts')
+    set(gcf,"Position",[25.6667 193 1.6373e+03 420])
+    saveas(figure(1),[where_I_want_figures_saved,'Mission ', char(string(eachmission)),'.png'])
+    hold off
+    close all
+    clear deepI
+    clear deepvalue
+    clear surfaceI
+    clear surfacevalue
 end
 
 
