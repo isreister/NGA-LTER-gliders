@@ -8,6 +8,8 @@
 
 % Here is the cell organization:
 %Level 1 (top level)
+%sci variables. Some of these variables are grabbed now for troubleshooting
+%but dropped later on.
     % AllGliderVariables{1}=lats;
     % AllGliderVariables{2}=lons;
     % AllGliderVariables{3}=mydatenums;
@@ -23,6 +25,8 @@
     % AllGliderFliVariables{1}=Dflidates;
     % AllGliderFliVariables{2}=Dflidepth;
     % AllGliderFliVariables{3}=Dfliinflections;
+    % AllGliderFliVariables{4}=Dfliu;
+    % AllGliderFliVariables{5}=Dfliv;
 % Level 2
     %Each variable is a cell array wherein the a number of cells that correspond to
     %however many missions were processed in 'DataProcessingGlider_AllGliderVariablesMakerV2.m
@@ -362,95 +366,6 @@ end
         Ddatemin{ix}=min(Dscidates{ix});
         end
     end
-%         if isfield(sci, 'sci_time') %corrects the sci field name for time to be consistent throughout all deployments.
-%             sci.time=sci.sci_time;
-%             sci=rmfield(sci, 'sci_time');
-%         end
-% 
-%         if isfield(sci, 'pres') %corrects the sci field name for time to be consistent throughout all deployments.
-%             sci.press=sci.pres;
-%             sci=rmfield(sci, 'pres');
-%         end
-% 
-%         if isfield(sci, 'sci_depth') %corrects the sci field name for depth to be consistent throughout all deployments.
-%             sci.depth=sci.sci_depth;
-%             sci=rmfield(sci, 'sci_depth');
-%         end
-% 
-%         if isfield(sci, 'sal') %corrects the sci field name for time to be consistent throughout all deployments.
-%             sci.psal=sci.sal;
-%             sci=rmfield(sci, 'sal');
-%         end
-% 
-%         if isfield(sci,'do')
-%             sci.do_c=sci.do;
-%             sci=rmfield(sci,'do');
-%         end
-% 
-%         if isfield(sci,'do_conc')
-%             sci.do_c=sci.do_conc;
-%             sci=rmfield(sci,'do_conc');
-%         end
-% 
-%         %replace all depth with recalculated depth from pressure for
-%         %mission 7 since that one had this problem: 
-%         %Hank: So, this is a pretty good example of what transpired on the 2024 Spring Shackleton deployment. This was unknown to us during deployment, but we had a folder on the flight computer that was a kind of placeholder called "./Trash" and in it was all of the 2023 flight data we collected. The flight control CF card was backed up and then it's contents were cut and copied to the computer's "trash" folder, however, the computer's trash folder was not emptied while the CF card was still in the CF card reader. The computer created that ."Trash" folder as a backup just in case that delete was unintentional. Fast Forward to 2024, I started seeing that the flight computer's CF card was filling up fast, much faster than anticipated and this was causing problems because the flight computer had no where to write data to. So, long story short, we made space and that involved corrupting all of the raw, DBD files onboard the glider up to that day (April 24, 2024 00:21:43 UTC). However, the science computer has no such issues, so it was recording data at full resolution the entire deployment.
-%         %There are several data variables that are used by both the Flight and Science computers onboard the glider, as you so rightly point out in the attached snippet of code, Depth is one of those variables. There's two places where depth is measured on the glider, one is from a pressure port on the aft tail cone and the second is from the CTD's pressure channel. The raw pressure (and hence depth) data measured from the tail cone sensor was mostly lost due to the DBD data purge mid-flight. We do have the SBD data files though, so that saved the pressure timeseries from the tail-cone sensor, albeit at a much reduced volume because that is the data we sent via iridium. In my re-processing of the data, I merged the flight SBD data prior to April 24 with the flight DBD data post April 24 and that is why when you plot sci.depth, it looks like there is a mismatch on the sample rate in the earlier part of the deployment. I would try and stick to using the CTD pressure channel for computing the vehicle's depth. If you want to be fancy, use the function "gsw_z_from_p" from https://www.teos-10.org/. This variable is actually already computed and included in the matlab distrubition, it's called sci.pdepth, short for "potential depth" (edited) 
-% 
-% 
-% %science variables
-%         Dlat{ix}=sci.lat;
-%         Dlon{ix}=sci.lon;
-%         Dscidates{ix}=sci.time;
-
-%         Dchl{ix}=sci.chl;
-%         Dpres{ix}=sci.press;
-%         Dsal{ix}=sci.psal;
-%         Dtemp{ix}=sci.temp;
-%         Ddepth{ix}=sci.depth;
-%         Dbb{ix}=sci.bb;
-%         Dcond{ix}=sci.cond;
-% %flight variables    
-
-% 
-% 
-% %note that the sci depth has a higher resolution than the fli depth.
-% 
-% 
-%         % Vars that only some gliders have: par,  %do_c or do (dissolved oxygen) and cdom, 
-%         if isfield(sci,'par') & length(sci.par)>1
-%             Dpar{ix}=sci.par;
-%         else
-%             Dpar{ix}=[];
-%         end
-% 
-%         if isfield(sci,'do_c') & length(sci.do_c)>1% this seperates do_c from do_p (which is percentage)
-%             %if the field is empty length is zero, if the field is a nan, length is 1.
-%             Ddo_c{ix}=sci.do_c;
-% 
-%         else
-%             Ddo_c{ix}=[];
-%         end
-% 
-%         if isfield(sci,'cdom') & length(sci.cdom)>1
-%             Dcdom{ix}=sci.cdom;
-%         else
-%             Dcdom{ix}=[];
-%         end
-% 
-%         if sum(~isnan(Dpres{ix}))==0
-%             keyboard 
-%             %there is no pressure data here
-%         end
-%     end
-% 
-% 
-%     m_proj('lambert','long',[ngaminLON ngamaxLON],'lat', [ngaminLAT ngamaxLAT]); 
-%     %uncomment if you want to see some land. takes more time to plot.
-%     % m_gshhs_h('patch',[ 1.0000    1.0000    0.8196]);%mellow yellow
-%     % m_grid('xlabeldir','end','fontsize',10,'YaxisLocation','left','FontSize',14);
-% 
-
 
 
 %% Narrow down our box some more:
