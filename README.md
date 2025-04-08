@@ -4,5 +4,5 @@ This repo holds all the code that was used to process gliders deployed in the no
 Sequence is:
 1) Data ProcessingGlider_AllGliderVariablesMaker2
 2) Data ProcessingGlider_Profilesplitterv4
-3) DataProcessingGlider_PrelimGridDataCell_and_prelimQC
-4) QCglider               
+3) DataProcessingGlider_QCglider_and_verticalgridding
+              
