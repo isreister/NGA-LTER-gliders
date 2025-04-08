@@ -5,4 +5,7 @@ Sequence is:
 1) Data ProcessingGlider_AllGliderVariablesMaker2
 2) Data ProcessingGlider_Profilesplitterv4
 3) DataProcessingGlider_QCglider_and_verticalgridding
+
+Functions that are run in these scripts are in the glider function folder. 
+
               
