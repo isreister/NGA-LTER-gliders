@@ -84,17 +84,21 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 tooshallowlimt=0.25; %m  
 om=4; % outlier multiplier.
 useparallel=1;
-steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 secons) on every iteration.
-%steptime_in_seconds= 172800; %different option,moves forwad in time 2 days.
+%steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 secons) on every iteration.
+steptime_in_seconds= 172800; %different option,moves forwad in time 2 days.
 
 enter_a_bad_value=0; %if equal to 1, this enters a bad value of 20 in the data at 10 meters
 % somewhere within the timeseries. Useful to see if QC is actually working. Intended for Chlorophyll-a dataset. 
 %note:  For some reaon PWS has a hard time picking out the erroneous datapoint. Not sure why.
 
-QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
-%QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
+%QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
+filenameappend='parallelbigstep'; %filenames already include mission number and short variables name. This appends whatever you want to that.
+QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
 QCdatasavepath='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\'; %output directory for vertically gridded casts.
+datafilename='QC_GC_2day_v8'; %What you want to call the datafile.
 yes_plot_QCfigure=1;
+
+
 
 Stationkeepingset=logical([1,0,0,1,0,0,1,1]); %0s for missions you don't want to process.
 %%
@@ -211,8 +215,8 @@ if useparallel==1
         
         myabsindex=1:N;
         mystep=steptime_in_seconds;%my step is 3 hours.
-        dt_window=3;
-        i_list = 1:mystep:length(time2)-mystep;
+        dt_window=3; % 3 day window is specified here.
+        i_list = 1:mystep:length(time2);%i_list is a vector of forward shifts in time, determined by a user selected timestep. (Usually 3 hours or up to 2 days)
     num_points = length(time);
     outliersfinal = ones(num_points, 1); % Initialize once outside
     
@@ -294,8 +298,8 @@ if useparallel==1
             title(['Mission ',char(string(eachmission)),' ' AllGliderVariablesnames{eachvariable}])
             
             legend('Original Data','Good (not shallow, not outliers)','Outliers')
-            saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable},'parallel.png'])
-            saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable},'parallel'])
+            saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable}, filenameappend,'.png'])
+            saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable}, filenameappend])
             clf 
         end
         temp(~good)=nan;
@@ -354,7 +358,7 @@ else
         dt_window=3;
     
         
-        for i = 1:mystep:length(time2)-round(mystep/2) %i operates within the 3 day chunk
+        for i = 1:mystep:length(time2) %i shifts forward in time by a user selected timestep. (Usually 3 hours or up to 2 days)
                 % Find window
                 t0 = time2(i);
                 display(string(convrtdt(t0)))
@@ -624,7 +628,7 @@ end
 %empty out any sheets that are just nans.
 
 
- save([QCdatasavepath,'QC_GC_v8.mat'],'QC_GC')
+ save([QCdatasavepath,datafilename,'.mat'],'QC_GC')
 
 
 
