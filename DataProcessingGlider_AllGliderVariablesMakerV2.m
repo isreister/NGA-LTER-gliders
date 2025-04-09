@@ -27,8 +27,7 @@
     % AllGliderFliVariables{1}=Dflidates;
     % AllGliderFliVariables{2}=Dfliu;
     % AllGliderFliVariables{3}=Dfliv;
-save([myoutput,'AllgliderDataV3.mat'],'AllGliderVariables')
-save([myoutput,'AllgliderFli_DataV3.mat'],'AllGliderFliVariables')
+
 % Level 2
     %Each variable is a cell array wherein the a number of cells that correspond to
     %however many missions were processed in 'DataProcessingGlider_AllGliderVariablesMakerV2.m
@@ -118,8 +117,8 @@ missioncolors=jet(length(datarepo));
     % has par listed under sci.units, BUT that glider (1152) does not have a
     % PAR sensor, or at least AOOS isn't reporting it if it does.
     
-
-Ineedtomakemanualchanges=0;
+apply_handediting=1; %this controls manual changes to the data itself.
+Ineedtomakemanualchanges=0; %this controls manual changes to fieldnames
     %Manual fixes to the current datset to make these things true.
 if Ineedtomakemanualchanges==1
     load([myroot,datarepo{8}]); %loads up our sci structure.
@@ -487,6 +486,12 @@ VCUR=[-10,10]; %m/s
 %%
 
 
+% Manual corrections
+%% Shackleton (glider 191) PAR before 2024 has a very small negative offset. To correct I simply add the minimum value for found in the 2021 (-0.9721) and 2023 (-3.3380). 
+if apply_handediting==1
+par{1}=min(par{1})+par{1};
+par{4}=min(par{4})+par{4};
+end
 %basic range based QC to remove impossible values
 for ix=1:length(datarepo2)
 
