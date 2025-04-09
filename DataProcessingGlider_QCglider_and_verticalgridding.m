@@ -84,18 +84,18 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 tooshallowlimt=0.25; %m  
 om=4; % outlier multiplier.
 useparallel=1;
-%steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 secons) on every iteration.
-steptime_in_seconds= 172800; %different option,moves forwad in time 2 days.
+steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 secons) on every iteration.
+%steptime_in_seconds= 172800; %different option,moves forwad in time 2 days.
 
 enter_a_bad_value=0; %if equal to 1, this enters a bad value of 20 in the data at 10 meters
 % somewhere within the timeseries. Useful to see if QC is actually working. Intended for Chlorophyll-a dataset. 
 %note:  For some reaon PWS has a hard time picking out the erroneous datapoint. Not sure why.
 
-%QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
-filenameappend='parallelbigstep'; %filenames already include mission number and short variables name. This appends whatever you want to that.
-QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
+QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
+filenameappend='parallel'; %filenames already include mission number and short variables name. This appends whatever you want to that.
+%QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
 QCdatasavepath='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\'; %output directory for vertically gridded casts.
-datafilename='QC_GC_2day_v8'; %What you want to call the datafile.
+datafilename='QC_GCv9'; %What you want to call the datafile.
 yes_plot_QCfigure=1;
 
 
@@ -255,6 +255,7 @@ if useparallel==1
                 mask_clipped = (vals <= min_threshold);
                 valsforIQR = vals(~mask_clipped);
             elseif eachvariable == 5
+        
                min_threshold = 1;
                mask_clipped = (vals <= min_threshold);
                valsforIQR = vals(~mask_clipped);
@@ -321,7 +322,8 @@ else
     for eachmission=1:sum(Stationkeepingset)
     
      for eachvariable=1:size(SK_GliderVariables2,2)
-     
+     %for eachvariable=5
+
         time=SK_GliderVariables{3}{eachmission};
         time1=SK_GliderVariables{3}{eachmission}(~isnan(SK_GliderVariables{3}{eachmission}));
         time2=datenum(convrtdt(time1(1)):seconds(1):convrtdt(time1(end)));
@@ -482,7 +484,7 @@ end
 %recombining
 %if needed, save the variables specified in the load command below. These
 %are all the variables needed to continue.
-%load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\temporarysave_QC.mat','tempAll','SK_GliderVariables','SK_upcasts','SK_downcasts','Stationkeepingset')
+load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\temporarysave_QC.mat','tempAll','SK_GliderVariables','SK_upcasts','SK_downcasts','Stationkeepingset')
 for eachvariable=1:length(SK_GliderVariables) %if a variable doesn't exist for a particular mission, replace with a nan string.
     for eachmission=1:length(SK_GliderVariables{5})
         
@@ -614,7 +616,7 @@ end
         tempgrid(:,2:2:end,:)=tempgrid_u;
         QC_GC{eachmission}=tempgrid; %quality controlled glider profiles. rows are depths, columns are profiles, stacks are variables.
     end
-%
+%%
  for eachmission=1:sum(Stationkeepingset)
      for eachvar=1:length(SK_GliderVariablesQC)
         figure(1)
@@ -632,3 +634,17 @@ end
 
 
 
+%variable organization saved:
+   % AllGliderVariables{1}=lats;
+    % AllGliderVariables{2}=lons;
+    % AllGliderVariables{3}=mydatenums;
+    % AllGliderVariables{4}=chl;
+    % AllGliderVariables{5}=pres;
+    % AllGliderVariables{6}=cond;
+    % AllGliderVariables{7}=temp;
+    % AllGliderVariables{8}=par;
+    % AllGliderVariables{9}=scatter;
+    % AllGliderVariables{10}=do_c;
+    % AllGliderVariables{11}=cdom;
+    % AllGliderVariables{12}=Dfliu;
+    % AllGliderVariables{13}=Dfliv;
