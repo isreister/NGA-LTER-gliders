@@ -474,7 +474,7 @@ end
 CNDC=[0,60]; %s m^-1
 TEMP=[-2.5, 40]; %C
 PRES=[-5,1100]; %dbar
-BBP=[0,1]; %m^-1
+BBP=[0.0001,1]; %m^-1
 PSAL=[2,41]; 
 DOX1=[0,650]; %umol l^-1
 CPHL=[0,100]; %mg m%-3
@@ -489,8 +489,8 @@ VCUR=[-10,10]; %m/s
 % Manual corrections
 %% Shackleton (glider 191) PAR before 2024 has a very small negative offset. To correct I simply add the minimum value for found in the 2021 (-0.9721) and 2023 (-3.3380). 
 if apply_handediting==1
-par{1}=min(par{1})+par{1};
-par{4}=min(par{4})+par{4};
+par{1}=abs(min(par{1}))+par{1};
+par{4}=abs(min(par{4}))+par{4};
 end
 %basic range based QC to remove impossible values
 for ix=1:length(datarepo2)

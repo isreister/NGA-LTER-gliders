@@ -6,15 +6,15 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 
 %This changes data that is too shallow or identified as outlier to nan. 
 % The shallow limit is user configurable. 
-% To identify outliers, a the interquarile range is computed for the data, with a moving window of 3 days by 3 meters that progresses on a timestep of 3 hours.
+% To identify outliers, a the interquarile range is computed for the data, with a moving window of 3 days by 3 meters that progresses on a timestep of of the user's choosing (you should probably stick to something between 3 hours and 1.5 days).
 % Outliers are identified using with the upper and lower limits that are
 % some multiple of the interquartile range. This multiple (outlier multiple) is user
 % configurable. I have it set to a very conservative value of 4 right now.
 % This code takes about 20 - 30 minutes to do a 2 month glider mission. If
 % you want faster completion times, you can increase the time step by which
-% the window moves, e.g. 2 day time steps does same job done in about 5 minutes. Don't go over 3 days or you will miss data altogether. 
+% the window moves, e.g. 1.5 day time steps does same job done in about 10 minutes. Don't go over 3 days or you will miss data altogether. 
 % With a timesteps of 3 hours, the code runs about 3 times as fast using parallel
-% processing, so that is the default implementation. With a timestep of 2 days, the parallel processing is still about twice as fast as the
+% processing, so that is the default implementation. With a timestep of 1.5 days, the parallel processing is still about twice as fast as the
 % forloop. The code can be still be run using a normal
 % for loop, but I'd suggest using that only when you want to troubleshoot something, like exploring if you want to use 
 % a different outlier multiple, as parloops are 
@@ -26,14 +26,21 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 % out of memory if you are doing a 3 hour timestep and you are working on
 % other processes on your computer (like typing a dissertation). YOu can
 % always just save out the tempAll variable for however far it got, adjust
-% variables and missions and start again. Or better yet run this when you
-% leave work.
+% variables and missions and start again. My suggestion: run the code on a
+% 1.5 day timestep setting while you're at lunch. run the code on a 3 hour timestep setting (if you think you need it) when you leave for the day. 
+
+% If you want to adjust the moving window, the variables you are looking
+% for in the code are: dz and dt_window. The window setting right now,
+% assuming a profile occurs every 1.5 hours, provides a ~150 measurements
+% total, 50 measurements per depth. I haven't played around with with
+% larger window sizes (say like 6 days), but it's probably worth doing.
 
 
 %Once the quality control is complete the data is then gridded to 1 m bins for 0 to 300 by however many profiles are in
 %the dataset. I think this gridding could be done in a way that is a little
 %more flexible to future changes in variables, but it does the job for now.
-%Can always improve later. Other improvements that could be made that I would prioritize: (i)
+%Can always improve later. I also think a rolling window for depth might be worth it.
+% Other improvements that could be made that I would prioritize before those: (i)
 %correcting for different sensor time-responses of the thermistor,
 %conductivity and pressure sensors. (ii) thermal lag correction. (iii). 
 %PAR data should only be assessed on the upcast
@@ -84,18 +91,18 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 tooshallowlimt=0.25; %m  
 om=4; % outlier multiplier.
 useparallel=1;
-steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 secons) on every iteration.
-%steptime_in_seconds= 172800; %different option,moves forwad in time 2 days.
+%steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 seconds) on every iteration.
+steptime_in_seconds= 129600; %different option,moves forward in time 1.5 days on every iteration.
 
 enter_a_bad_value=0; %if equal to 1, this enters a bad value of 20 in the data at 10 meters
 % somewhere within the timeseries. Useful to see if QC is actually working. Intended for Chlorophyll-a dataset. 
 %note:  For some reaon PWS has a hard time picking out the erroneous datapoint. Not sure why.
 
-QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
+%QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
 filenameappend='parallel'; %filenames already include mission number and short variables name. This appends whatever you want to that.
-%QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
+QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
 QCdatasavepath='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\'; %output directory for vertically gridded casts.
-datafilename='QC_GCv9'; %What you want to call the datafile.
+datafilename='QC_GC_1dayhalf_v9'; %What you want to call the datafile.
 yes_plot_QCfigure=1;
 
 
@@ -160,6 +167,7 @@ for eachmission=1:sum(Stationkeepingset) %These are the variables we want to run
     SK_GliderVariables2{9}{eachmission}=SK_GliderVariables{12}{eachmission};%Dfliu;
     SK_GliderVariables2{10}{eachmission}=SK_GliderVariables{13}{eachmission};%Dfliv;
 end
+
 
 %remove all variables in SK_GliderVariables2 taht are less than tooshallowlimt
 
@@ -484,7 +492,7 @@ end
 %recombining
 %if needed, save the variables specified in the load command below. These
 %are all the variables needed to continue.
-load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\temporarysave_QC.mat','tempAll','SK_GliderVariables','SK_upcasts','SK_downcasts','Stationkeepingset')
+%save([QCdatasavepath,'temporarysave_QC.mat'],'tempAll','SK_GliderVariables','SK_upcasts','SK_downcasts','Stationkeepingset')
 for eachvariable=1:length(SK_GliderVariables) %if a variable doesn't exist for a particular mission, replace with a nan string.
     for eachmission=1:length(SK_GliderVariables{5})
         
