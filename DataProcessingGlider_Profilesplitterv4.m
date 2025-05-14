@@ -104,7 +104,7 @@ load([where_data_was_saved,'AllgliderFli_DataV3.mat'],'AllGliderFliVariables')
 
 
 Timelimits{1}=[datenum(datetime(2021,01,20,00,00,00)),datenum(datetime(2021,05,05,00,00,00))]; %PWS stationkeeping
-Timelimits{2}=[datenum(datetime(2022,02,14,00,00,00)),datenum(datetime(2022,03,02,00,00,00))]; %transecting
+Timelimits{2}=[datenum(datetime(2022,03,19,00,00,00)),datenum(datetime(2022,04,12,00,00,00))]; %GAK1 stationkeeping
 Timelimits{3}=[datenum(datetime(2022,06,04,00,00,00)),datenum(datetime(2022,07,15,00,00,00))]; %transecting (Yakatat)
 Timelimits{4}=[datenum(datetime(2023,03,02,00,00,00)),datenum(datetime(2023,05,04,00,00,00))]; %stationkeeping
 Timelimits{5}=[datenum(datetime(2023,03,24,00,00,00)),datenum(datetime(2023,04,14,00,00,00))]; %transecting
@@ -114,7 +114,7 @@ Timelimits{8}=[datenum(datetime(2024,06,20,20,00,00)),datenum(datetime(2024,09,2
 
 
 mytitles{1}=[char(datetime(2021,01,20,00,00,00)),' ',char(datetime(2021,05,05,00,00,00)),':PWS Station Keeping']; %PWS stationkeeping
-mytitles{2}=[char(datetime(2022,02,14,00,00,00)),' ',char(datetime(2022,03,02,00,00,00)),':Seward Transect']; %transecting
+mytitles{2}=[char(datetime(2022,03,19,00,00,00)),' ',char(datetime(2022,04,12,00,00,00)),':Seward Transect']; %GAK1 stationkeeping
 mytitles{3}=[char(datetime(2022,06,04,00,00,00)),' ',char(datetime(2022,07,15,00,00,00)),':Yakatat Transect']; %transecting (Yakatat)
 mytitles{4}=[char(datetime(2023,03,02,00,00,00)),' ',char(datetime(2023,05,04,00,00,00)),'GEO Station Keeping']; %stationkeeping
 mytitles{5}=[char(datetime(2023,03,24,00,00,00)),' ',char(datetime(2023,04,14,00,00,00)),'Seward Transect']; %transecting
@@ -122,7 +122,7 @@ mytitles{6}=[char(datetime(2024,03,23,00,00,00)),' ',char(datetime(2024,04,05,00
 mytitles{7}=[char(datetime(2024,03,20,00,00,00)),' ',char(datetime(2024,06,18,00,00,00)),'GEO Station Keeping']; %stationkeeping
 mytitles{8}=[char(datetime(2024,06,20,20,00,00)),' ',char(datetime(2024,09,21,20,00,00)),'GEO Station Keeping']; %stationkeeping
 
-Stationkeepingset=logical([1,0,0,1,0,0,1,1]);
+Stationkeepingset=logical([1,1,0,1,0,0,1,1]);
 
 %%
 

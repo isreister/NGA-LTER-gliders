@@ -107,7 +107,8 @@ yes_plot_QCfigure=1;
 
 
 
-Stationkeepingset=logical([1,0,0,1,0,0,1,1]); %0s for missions you don't want to process.
+%Stationkeepingset=logical([1,1,0,1,0,0,1,1]); %0s for missions you don't want to process. 
+Stationkeepingset=logical([0,1,0,0,0,0,0,0]); %for demo purposes
 %%
 
     AllGliderVariablesnames{1}='chl';
