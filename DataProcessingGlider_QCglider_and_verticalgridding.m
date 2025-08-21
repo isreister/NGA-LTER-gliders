@@ -91,8 +91,8 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 tooshallowlimt=0.25; %m  
 om=4; % outlier multiplier.
 useparallel=1;
-%steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 seconds) on every iteration.
-steptime_in_seconds= 129600; %different option,moves forward in time 1.5 days on every iteration.
+steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 seconds) on every iteration.
+%steptime_in_seconds= 129600; %different option,moves forward in time 1.5 days on every iteration.
 
 enter_a_bad_value=0; %if equal to 1, this enters a bad value of 20 in the data at 10 meters
 % somewhere within the timeseries. Useful to see if QC is actually working. Intended for Chlorophyll-a dataset. 

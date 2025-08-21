@@ -63,7 +63,7 @@ filepacenames{4}='GEO2024_summer';
 
 
 QCdatasavepath='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\';
-datafilename = 'QC_GCgridded_v4testing';
+datafilename = 'QC_GCgridded_v5';
 
 Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\Gridded_no_interp yet\';
 
@@ -168,8 +168,8 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
         mean(distances);
         std(distances);
         display(['total number of profiles for ' ,placesnames{eachmission}, ' mission ', char(string(eachmission)) ,' was ', char(string(Totalcasts))])
-    
-    
+        % figure;
+        % histogram(distances)
         display(['lat lon centerpoint for' ,placesnames{eachmission}, ' mission ', char(string(eachmission)) ,' was ', char(string(round(eachcenterpointlat{eachmission},3))),'  , ',char(string(round(eachcenterpointlon{eachmission},3)))])
     
         distances = distance(eachcenterpointlat{eachmission}, eachcenterpointlon{eachmission}, lat_temp, lon_temp, wgs84Ellipsoid('km'));
@@ -177,8 +177,8 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
         std(distances);
         display(['mean and std from that centerpoint for' ,placesnames{eachmission}, ' mission ', char(string(eachmission)) ,' was ', char(string(round(mean(distances),1))),'  , ',char(string(round(std(distances),1)))])
     
-    
-    
+        % figure;
+        % histogram(distances)
     end
     
     %all geo together:
@@ -207,58 +207,90 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
     
         
         timestamps=[QC_GC{1}(1,:,3)];
-        timestamps2=[QC_GC{2}(1,:,3),QC_GC{3}(1,:,3),QC_GC{4}(1,:,3)];
-    
+        %timestamps2prep=[QC_GC{2}(1,:,3),QC_GC{3}(1,:,3),QC_GC{4}(1,:,3)];
+        timestamps2prep=[QC_GC{2}(1,:,3),QC_GC{3}(1,:,3)];
+        %timestamps2prep=[QC_GC{4}(1,:,3)];
+        %stamplogic=timestamps2prep<datenum(datetime(2024,07,10));
+        %timestamps2=timestamps2prep(stamplogic);
+        timestamps2=timestamps2prep;
+        timestamps2test=[QC_GC{2}(:,:,3),QC_GC{3}(:,:,3),QC_GC{4}(:,:,3)];
+        mydepth2test=([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5),QC_GC{4}(:,:,5)]);
+        %timestamps2=[QC_GC{2}(1,:,3)]; 
+
+        %OK so on July 10th we changed our sampling from every 40ish
+        %minutes to twice every 4 hours or something like that. So the main
+        %part of our study is going to be previous to July 10th
+
         difftimes=diff((convrtdt(timestamps)));
         difftimes2=diff((convrtdt(timestamps2)));
-    
+      
+        %What we really want is "how long did a dive take"
         difftimes(difftimes>hours(24))=[];
         difftimes2(difftimes2>hours(24))=[];
-    
+        histogram(difftimes2)
+        PWStemporoalresolution_median=median(difftimes,'omitnan');
         PWStemporoalresolution=mean(difftimes,'omitnan');
         PWSstdtimersol=std(difftimes,'omitnan');
+
+        q = quantile(difftimes, [0.25 0.75]);
+        PWSq1 = q(1);
+        PWSq3 = q(2);
+        PWSiqr_value = iqr(difftimes2);
+       display(['mean and std temporal resolution for ' ,placesnames{1}, ' deployment was ', char(string(minutes(PWStemporoalresolution)/60)),' ',char(string(minutes(PWSstdtimersol)/60))])
     
-       display(['mean and std temporal resolution for ' ,placesnames{1}, ' deployment was ', char(string(PWStemporoalresolution)),' ',char(string(PWSstdtimersol))])
+        figure;
+        histogram(difftimes)
     
-    
-    
-        GEOtemporoalresolution=mean(difftimes2,'omitnan');
+        GEOtemporoalresolution=mean(difftimes2,'omitnan'); %lots of changing sampling schemes. Median seems like a better choice.
+        q = quantile(difftimes2, [0.25 0.75]);
+        GEOq1 = q(1);
+        GEOq3 = q(2);
         GEOstdtimersol=std(difftimes2,'omitnan');
+        figure;plot(convrtdt(timestamps2test(:)),mydepth2test(:))
+
+        figure;
+        histogram(difftimes2)
     
-       display(['mean and std temporal resolution for ' ,placesnames{1}, ' deployment was ', char(string(GEOtemporoalresolution)),' ',char(string(GEOstdtimersol))])
+       display(['mean and std temporal resolution for ' ,placesnames{2}, ' deployment was ', char(string(minutes(GEOtemporoalresolution)/60)),' ',char(string(minutes(GEOstdtimersol)/60))])
     
         depthmax=max([QC_GC{1}(:,:,5)]);
-        depthmax2=max([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5),QC_GC{4}(:,:,5)]);
-        
+        %depthmax2=max([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5),QC_GC{4}(:,:,5)]);
+        depthmax2=max([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5)]);
+        %depthmax2=max([QC_GC{4}(:,:,5)]);
         remove=difftimes>hours(24);
-        remove2=difftimes>hours(24);
+        remove2=difftimes2>hours(24);
     
         PWSmeandepth=mean(depthmax(~remove),"omitmissing");
         PWSstddepth=std(depthmax(~remove),"omitmissing");
     
         display(['mean and std depth for ' ,placesnames{1}, ' deployment was ', char(string(round(PWSmeandepth,1))),' ',char(string(round(PWSstddepth,1)))])
+        figure;
+        histogram(depthmax(~remove))
     
-    
-        GEOmeandepth=mean(depthmax2(~remove),"omitmissing");
-        GEOstdepth=std(depthmax2(~remove),"omitmissing");
+        GEOmeandepth=mean(depthmax2(~remove2),"omitmissing");
+        GEOstdepth=std(depthmax2(~remove2),"omitmissing");
         display(['mean and std depth for ' ,placesnames{2}, ' deployment was ', char(string(round(GEOmeandepth,1))),' ',char(string(round(GEOstdepth,1)))])
-    
+        figure;
+        histogram(depthmax2(~remove2))
         % why does PWS have such temporally short dives??? Answer: The data looks
         % OK so it must have been a much steeper dive angle. Looking at the
         % data, the longer dives down to 120 meters took about 30 minutes to
         % complete. A profile is half of a dive, so that 15 minutes. Add in the
         % occasional short dive and you get about 15 minutes for a dive.
     
-        % figure;
-        % 
-        % PWStrtime=QC_GC{1}(:,:,3);
-        % PWStrdepth=QC_GC{1}(:,:,5);
-        % PWStrtime=PWStrtime(:);
-        % PWStrdepth=PWStrdepth(:);
-        % scatter(convrtdt(PWStrtime),PWStrdepth,'o')
-    
-    
-        
+        mytiles=tiledlayout(2,2);
+        for eachmission=1:4
+            nexttile
+        missiontrtime=QC_GC{eachmission}(:,40:50,3);
+        PWStrdepth=QC_GC{eachmission}(:,40:50,5);
+        missiontrtime=missiontrtime(:);
+        PWStrdepth=PWStrdepth(:);
+        scatter(convrtdt(missiontrtime),PWStrdepth,'o')
+        title(filepacenames{eachmission})
+        ylabel('Depth(m)')
+        end
+        set(gcf,"Position",[279 60 1348 662])
+        saveas(gcf,'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\typicaldives.png')
         
         
         
