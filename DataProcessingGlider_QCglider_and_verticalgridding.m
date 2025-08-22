@@ -190,6 +190,10 @@ end
 
 if useparallel==1
 
+
+
+
+
     for eachmission=1:sum(Stationkeepingset)
     
      for eachvariable=1:size(SK_GliderVariables2,2)
@@ -228,6 +232,10 @@ if useparallel==1
         i_list = 1:mystep:length(time2);%i_list is a vector of forward shifts in time, determined by a user selected timestep. (Usually 3 hours or up to 2 days)
     num_points = length(time);
     outliersfinal = ones(num_points, 1); % Initialize once outside
+
+    if ~license('test','Distrib_Computing_Toolbox')
+        error('Parallel Computing Toolbox is required to run this script with parfor.');
+    end
     
     parfor i_idx = 1:numel(i_list)
         i = i_list(i_idx);
