@@ -217,7 +217,7 @@ end
         containsSubstring = false;
         
             % Loop through each field of sci.units
-            fieldNames = fieldnames(sci.units);
+            fieldNames = fieldnames(sci.units); % sci is a structure loaded earlier in the line: load([myroot,datarepo2{ix}])
             for i = 1:length(fieldNames)
                 % Get the value of the current field
                 fieldValue = sci.units.(fieldNames{i});
@@ -356,7 +356,7 @@ end
                 end
             end
 
-        Dflidates{ix}=fli.gtime;
+        Dflidates{ix}=fli.gtime; % fli is a structure loaded earlier in the line: load([myroot,datarepo2{ix}])
         Dflidepth{ix}=fli.depth;
         Dfliinflections{ix}=fli.inflecting;
         Dfliu{ix}=fli.u;
