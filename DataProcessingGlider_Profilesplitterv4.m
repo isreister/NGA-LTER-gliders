@@ -128,7 +128,8 @@ Stationkeepingset=logical([1,1,0,1,0,0,1,1]);
 %%
 
 %%
-
+% Add all subfolders of the current folder to the path
+addpath(genpath(pwd));
 T=AllGliderVariables{3}; %times for each mission.
 
 % Apply mission limits to all variables
