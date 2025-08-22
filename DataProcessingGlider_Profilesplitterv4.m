@@ -78,17 +78,18 @@ close all
 
 
 
-%% user inputs
+%% USER INPUTS
 
 
-missionset=[1:8];
+missionset=[1:8]; %This is how many mission datasets you want to process.For example if I 
+                  % had only two mission datasets, we'd want missionset= [1:2]
 
 where_data_was_saved='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\';
 where_I_want_data_saved='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\';
 where_I_want_figures_saved='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\prelim\';
 
 
-%% Setting up our time limits
+% Setting up our time limits
 %The limits below partition the glider missions into transecting and
 %stationkeeping. Some of the transecting date limmits include breif (3 days
 %or less) periods of stationkeeping, which may be useful for verification
