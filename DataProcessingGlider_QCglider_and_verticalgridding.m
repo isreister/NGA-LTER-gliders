@@ -43,9 +43,7 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 % Other improvements that could be made that I would prioritize before those: (i)
 %correcting for different sensor time-responses of the thermistor,
 %conductivity and pressure sensors. (ii) thermal lag correction. (iii). 
-%PAR data should only be assessed on the upcast
-%because there is a tilt to the PAR sensor that makes the downcast par
-%inaccurate. These are just some of the best practices from here: https://dx.doi.org/10.26198/5c997b5fdc9bd
+%This is a good source for best practices: https://dx.doi.org/10.26198/5c997b5fdc9bd
 %Author Isaac Reister 4/4/2025.
 
 %variables loaded:
