@@ -4,27 +4,33 @@ clear all
 
 load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlider_AllGliderProfileSplit_v4.mat',"downcasts","upcasts","AllGliderVariables");
 
-%This changes data that is too shallow or identified as outlier to nan. 
+%This changes data that is a) too shallow 
+% or b) identified as outlier to nan. 
 % The shallow limit is user configurable. 
 % To identify outliers, a the interquarile range is computed for the data, with a moving window of 3 days by 3 meters that progresses on a timestep of of the user's choosing (you should probably stick to something between 3 hours and 1.5 days).
 % Outliers are identified using with the upper and lower limits that are
 % some multiple of the interquartile range. This multiple (outlier multiple) is user
 % configurable. I have it set to a very conservative value of 4 right now.
+% 
+% This means that when the set of 3 m by 3 days range of data is looked at, an outlier is only flagged
+% if it is 4 times the interquartile range of that dataset.
+
 % This code takes about 20 - 30 minutes to do a 2 month glider mission. If
 % you want faster completion times, you can increase the time step by which
 % the window moves, e.g. 1.5 day time steps does same job done in about 10 minutes. Don't go over 3 days or you will miss data altogether. 
 % With a timesteps of 3 hours, the code runs about 3 times as fast using parallel
-% processing, so that is the default implementation. With a timestep of 1.5 days, the parallel processing is still about twice as fast as the
+% processing, so the parallel processing is the default implementation. With a timestep of 1.5 days, the parallel processing is still about twice as fast as the
 % forloop. The code can be still be run using a normal
 % for loop, but I'd suggest using that only when you want to troubleshoot something, like exploring if you want to use 
 % a different outlier multiple, as parloops are 
-% difficult to troublshoot. The control to use the parloop or the forloop
+% difficult to troublshoot.The control to use the parloop or the forloop
 % is in the user configurable settings.
+
 % Parallel processing requires the Parallel computing toolbox. Some plots
 % are output that show the results of the quality control. Also fair warning: for long
 % glider deployments (like our 4 month summer one) this code wil likely run
 % out of memory if you are doing a 3 hour timestep and you are working on
-% other processes on your computer (like typing a dissertation). YOu can
+% other processes on your computer (like typing a dissertation). You can
 % always just save out the tempAll variable for however far it got, adjust
 % variables and missions and start again. My suggestion: run the code on a
 % 1.5 day timestep setting while you're at lunch. run the code on a 3 hour timestep setting (if you think you need it) when you leave for the day. 
@@ -32,7 +38,7 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 % If you want to adjust the moving window, the variables you are looking
 % for in the code are: dz and dt_window. The window setting right now,
 % assuming a profile occurs every 1.5 hours, provides a ~150 measurements
-% total, 50 measurements per depth. I haven't played around with with
+% total, 50 measurements per depth. I haven't played around with
 % larger window sizes (say like 6 days), but it's probably worth doing.
 
 
@@ -87,26 +93,26 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\DataProcessingGlide
 % less than 'tooshallowlimit' is replaced with a nan along with all associated variables.
 %this is intended to ensure that the glider is actually underwater for our measurments. 
 tooshallowlimt=0.25; %m  
-om=4; % outlier multiplier.
-useparallel=1;
+om=10; % outlier multiplier.
+useparallel=0;
 steptime_in_seconds=10800;%the time window (spanning 3 days) moves forward in time 3 hours (10800 seconds) on every iteration.
 %steptime_in_seconds= 129600; %different option,moves forward in time 1.5 days on every iteration.
 
 enter_a_bad_value=0; %if equal to 1, this enters a bad value of 20 in the data at 10 meters
 % somewhere within the timeseries. Useful to see if QC is actually working. Intended for Chlorophyll-a dataset. 
-%note:  For some reaon PWS has a hard time picking out the erroneous datapoint. Not sure why.
+
 
 %QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\';
-filenameappend='parallel'; %filenames already include mission number and short variables name. This appends whatever you want to that.
-QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\bigtimestep\';
+filenameappend='normalloopv10'; %filenames already include mission number and short variables name. This appends whatever you want to that.
+QCfigurepath='C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\QC\normalloop\';
 QCdatasavepath='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\'; %output directory for vertically gridded casts.
-datafilename='QC_GC_1dayhalf_v9'; %What you want to call the datafile.
+datafilename='QC_GC_v10'; %What you want to call the datafile.
 yes_plot_QCfigure=1;
 
 
 
 %Stationkeepingset=logical([1,1,0,1,0,0,1,1]); %0s for missions you don't want to process. 
-Stationkeepingset=logical([0,1,0,0,0,0,0,0]); %for demo purposes
+Stationkeepingset=logical([1,1,0,0,0,0,0,0]); %for demo purposes
 %%
 
     AllGliderVariablesnames{1}='chl';
@@ -125,7 +131,7 @@ Stationkeepingset=logical([0,1,0,0,0,0,0,0]); %for demo purposes
 
 SK_downcasts=downcasts(Stationkeepingset);
 SK_upcasts=upcasts(Stationkeepingset);
-
+missionnumbers=1:length(Stationkeepingset);
 
 for eachvariable=1:length(AllGliderVariables)
     SK_GliderVariables{eachvariable}=AllGliderVariables{eachvariable}(Stationkeepingset);
@@ -246,7 +252,7 @@ if useparallel==1
     
         tempinwindow = temp(in_window);
         windowed_abs_index = myabsindex(in_window);
-        localoutliers = zeros(num_points, 1);
+        local_outliers_per_depth = zeros(num_points, 1);
     
         z_edges = 0:dz:ceil(max(depth(in_window)));%looking at all depths here.
         [~, z_bin] = histc(depth(in_window), z_edges);
@@ -257,25 +263,25 @@ if useparallel==1
                 
          for zb = 1:max(z_bin) %z_bin is not a depth, it is an index of the bins in z_edges. So 27 refers to 27th bin in zedges which is 78 meters.           
     
-            vals = tempinwindow(z_bin == zb);
+            valsforIQR = tempinwindow(z_bin == zb);
             
             localindex_thiddepth = windowed_abs_index(z_bin == zb);
     
-            if sum(~isnan(vals)) < 100
+            if sum(~isnan(valsforIQR)) < 100
                 continue
             end
     
             if eachvariable == 1
                 min_threshold = 0.1;
-                mask_clipped = (vals <= min_threshold);
-                valsforIQR = vals(~mask_clipped);
+                mask_clipped = (valsforIQR <= min_threshold);
+                valsforIQR = valsforIQR(~mask_clipped);
             elseif eachvariable == 5
         
                min_threshold = 1;
-               mask_clipped = (vals <= min_threshold);
-               valsforIQR = vals(~mask_clipped);
+               mask_clipped = (valsforIQR <= min_threshold);
+               valsforIQR = valsforIQR(~mask_clipped);
             else
-                valsforIQR = vals;
+                valsforIQR = valsforIQR;
             end
     
             Q1 = quantile(valsforIQR, 0.25);
@@ -283,16 +289,16 @@ if useparallel==1
             IQR = Q3 - Q1;
             lower = Q1 - om * IQR;
             upper = Q3 + om * IQR;
-            is_out = (vals < lower) | (vals > upper);
+            is_out = (valsforIQR < lower) | (valsforIQR > upper);
     
-            localoutliers(localindex_thiddepth(is_out)) = 1;
+            local_outliers_per_depth(localindex_thiddepth(is_out)) = 1;
     
             shiftingindex = ones(num_points, 1);
             shiftingindex(in_window) = 0;
             shiftinglogic = logical(shiftingindex);
-            localoutliers(shiftinglogic) = 1;
+            local_outliers_per_depth(shiftinglogic) = 1;
     
-            local_outliersfinal = logical(local_outliersfinal) & logical(localoutliers);
+            local_outliersfinal = logical(local_outliersfinal) & logical(local_outliers_per_depth);
         end
     
         % Combine with outer loop
@@ -311,13 +317,18 @@ if useparallel==1
             hold on
             plot(convrtdt(SK_GliderVariables{3}{eachmission}(good)),temp(good),'o','Color',[0.9294    0.6941    0.1255])
             plot(convrtdt(SK_GliderVariables{3}{eachmission}(outlierslogic{eachvariable}{eachmission})),temp(outlierslogic{eachvariable}{eachmission}),'o','Color','r', 'MarkerFaceColor','r')
-            title(['Mission ',char(string(eachmission)),' ' AllGliderVariablesnames{eachvariable}])
+            selectmissionnumbers=missionnumbers(Stationkeepingset);
+            title(['Mission ',char(string(selectmissionnumbers(eachmission))),' ' AllGliderVariablesnames{eachvariable}])
             
-            legend('Original Data','Good (not shallow, not outliers)','Outliers')
+            if isempty(temp(outlierslogic{eachvariable}{eachmission}))
+                legend('Original Data','Good (not shallow, no outliers detected)')
+            else
+               legend('Original Data','Good (not shallow, not outliers)','Outliers')
+            end
             saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable}, filenameappend,'.png'])
             saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable}, filenameappend])
-            clf 
-        end
+            clf %enter a break point here if you want a quick view of the plots
+        end 
         temp(~good)=nan;
         tempAll{eachvariable}{eachmission}=temp;
         
@@ -334,160 +345,154 @@ else
 
 
 
-    for eachmission=1:sum(Stationkeepingset)
+     for eachmission=1:sum(Stationkeepingset) %for each mission...
     
-     for eachvariable=1:size(SK_GliderVariables2,2)
-     %for eachvariable=5
-
-        time=SK_GliderVariables{3}{eachmission};
-        time1=SK_GliderVariables{3}{eachmission}(~isnan(SK_GliderVariables{3}{eachmission}));
-        time2=datenum(convrtdt(time1(1)):seconds(1):convrtdt(time1(end)));
-        depth=-1.*gsw_z_from_p(10*SK_GliderVariables2{2}{eachmission},60);
+     for eachvariable=1:size(SK_GliderVariables2,2) %for each variable within each mission...
+     
+      
+        time=SK_GliderVariables{3}{eachmission}; %extract time stamps.
+        time1=SK_GliderVariables{3}{eachmission}(~isnan(SK_GliderVariables{3}{eachmission})); %non-nan times.
+        time2=datenum(convrtdt(time1(1)):seconds(1):convrtdt(time1(end))); %create a regularly spaced timeseries, in seconds.
+        depth=-1.*gsw_z_from_p(10*SK_GliderVariables2{2}{eachmission},60); %obtain depth in meters.
         
         % Initialize
-        temp=SK_GliderVariables2{eachvariable}{eachmission};
+        temp=SK_GliderVariables2{eachvariable}{eachmission}; %current variable.
     
         if enter_a_bad_value==1
             %enter a bad value in place of a real 10 meter depth
             dindex=1:length(depth);
-            somerealpoints=~isnan(temp) & (depth>10 & depth<11);
+            somerealpoints=~isnan(depth) & (depth>10 & depth<11);
             realdepths=dindex(somerealpoints);
-            temp(realdepths(100))=20;% insert a bad point to test.
-    
-            if eachmission==1
-    
-            end
+            temp(realdepths(1000))=20;% insert a bad point to test. 20 is a "bad" value for early spring chlorophyll-a. Value can be changed
+
         end
     
     
-        if sum(isnan(temp))==length(temp)
+        if sum(isnan(temp))==length(temp) %if temp is nan for the entire timeseries, we skip processing it.
             tempAll{eachvariable}{eachmission}=nan(1,length(time));
             continue
         end
         dz = 3; 
     
         N = length(temp);
-        outliersfinal=ones(N,1); %assume all are bad to start.
         
-        myabsindex=1:N;
-        %mystep=259200; %my step should be less than the window if we want to overlap
-        mystep=steptime_in_seconds;
-        dt_window=3;
-    
         
-        for i = 1:mystep:length(time2) %i shifts forward in time by a user selected timestep. (Usually 3 hours or up to 2 days)
-                % Find window
-                t0 = time2(i);
-                display(string(convrtdt(t0)))
-                %convrtdt(time(2))
-                in_window = (time >= t0 - dt_window/2) & (time <= t0 + dt_window/2);
-                %in_window = (time >= time(i)) & (time <= time(i+mystep-1));
-                %timechunk=time(in_window);
-                if sum(in_window)<100
-                    continue
-                end
-                tempinwindow=temp(in_window);
-                localindex = myabsindex(in_window);
-                
-                outliers = zeros(N,1);
-                localoutliers = outliers(in_window);
-                
-                z_edges = 0:dz:ceil(max(depth(in_window))); %looking at all depths here.
+        myabsindex=1:N; %the absolute index. This index only changes between missions.
+        mystep=steptime_in_seconds;%my step is 3 hours.
+        dt_window=3; % 3 day window is specified here.
+        i_list = time2(1):(mystep/(24*60*60)):time2(end);%i_list is a vector of forward shifts in time, determined by a user selected timestep. The unit is datenum. (Usually 3 hours or up to 2 days)
+    num_points = length(time);
+    outliersfinal = logical(ones(num_points, 1)); % %This is our outlier record. We assume all values are outliers to start.
+
+
     
-                [~, z_bin] = histc(depth(in_window), z_edges);
-    
-                
-                
-                tempinwindow(z_bin == 0)=nan; %excludes shallow depths (which were already desingated as nans earlier) and any other measurement assoicated with a nan depth.
-            for zb = 1:max(z_bin) %z_bin is not a depth, it is an index of the bins in z_edges. So 27 refers to 27th bin in zedges which is 78 meters.
-                        
-    
-                        
-                        vals = tempinwindow(z_bin==zb);
-                        
-                        localindex_thiddepth=localindex(z_bin==zb); %1,2,  56,57, and so on
-                        if sum(~isnan(vals))<100
-                            continue
-                        end
-                        % Compute IQR and outliers
-                        % chlorohyll-a noise floor
-                        if eachvariable==1
-                            min_threshold = 0.1;
-                            
-                            % Values hitting the lower limit
-                            mask_clipped = (vals <= min_threshold);
-                            
-                            % Use only non-clipped data to compute IQR
-                            valsforIQR = vals(~mask_clipped);
-                        elseif eachvariable == 5
-                            min_threshold = 1;
-                            mask_clipped = (vals <= min_threshold);
-                            valsforIQR = vals(~mask_clipped);
-            
-                        else
-                            valsforIQR=vals;
-                        end
-                        Q1 = quantile(valsforIQR, 0.25);
-                        Q3 = quantile(valsforIQR, 0.75);
-                        IQR = Q3 - Q1;
-                        lower = Q1 - om * IQR;
-                        upper = Q3 + om * IQR;
-                        is_out = (vals < lower) | (vals > upper);
-                        
-                        %This is a helpful plot for seeing how QC works on an
-                        %individual depth.
-                        % figure(2)
-                        %  clf
-                        % blah=1:length(vals);
-                        % plot(blah,vals)
-                        % hold on 
-                        % plot(blah(is_out),vals(is_out),'o','Color','r')
-                       
-                        outliers(localindex_thiddepth(is_out))=1; %as each depth is iterated through, this records the outliers for this timechunk
-                        shiftingindex=ones(N,1);
-                        shiftingindex(in_window)=0;
-                        shiftinglogic=logical(shiftingindex); %all ones except for our current window
-                        outliers(shiftinglogic)=1; %we just want to make the points that are not part of the time window be 1.
-                        outliersfinal=logical(outliersfinal) & logical(outliers); %if outlierfinal(n) is 1 and outlier(n) is 0, the result is 0. 1s in outlier final persist only if outlierfinal(n) is 1 and outlier(n) is 1. 
-                        
-                        if sum(outliersfinal)==0
-                            keyboard
-                        end
-                        outliersfinal=double(outliersfinal);
+    for i_idx = 1:numel(i_list) %i_list is a time vector. i_idx is the number of chunks.
+        t0 = i_list(i_idx);
         
-            end
-            %% This is a helpful plot for seeing how the iteration goes while
-            %% chlorophyll-a is being QCed.
-            % figure(1);
-            % clf
-            % tempindex=1:length(temp);
-            % plot(tempindex,temp)
-            % xlim([1,16*10^4])
-            % hold on
-            % plot(tempindex(logical(outliersfinal)),temp(logical(outliersfinal)),'o','Color','r')
-        
+        in_window = (time >= t0 - dt_window/2) & (time <= t0 + dt_window/2); %Produces logic vector for "measurements within this window of 3 days (1.5 days on either side of t0)".
+    
+        if sum(in_window) < 100 %if there are less than 100 measurements within the window skip as this is not a sufficiently large sample size.
+            continue
         end
     
-        outlierslogic{eachvariable}{eachmission}=logical(outliersfinal);
+        tempinwindow = temp(in_window); %actual values.
+        windowed_abs_index = myabsindex(in_window); %absolute index within the window.
+        
+    
+        z_edges = 0:dz:ceil(max(depth(in_window))); %create a regularly spaced depth vector.
+        [~, z_bin] = histc(depth(in_window), z_edges);%bin according to those depths
+    
+        local_outliersfinal = logical(ones(num_points, 1)); %this will assume all points are outliers for the start of the "in_window" set.
+        
+        tempinwindow(z_bin == 0)=nan; %excludes shallow depths (which were already desingated as nans earlier) and any other measurement assoicated with a nan depth.
+        outliercount = 0;
+        allnans=isnan(depth);
+        outlierindex =[];
+         for zb = 1:max(z_bin) %z_bin is not a depth, it is an index of the bins in z_edges. So 4 refers to 4th bin in zedges, the bin between 9 and 12 meters.           
+            local_outliers_per_depth = ones(num_points, 1); %this will assume all values are outliers to start
+            valsforIQR = tempinwindow(z_bin == zb); %aquire values for the 3 meter sets.
+            
+            localindex_nans=isnan(valsforIQR);
+            localindex_thiddepth = windowed_abs_index(z_bin == zb); %aquire index for 3 meter sets.
+          
+
+            if sum(~isnan(valsforIQR)) < 100
+
+                local_outliers_per_depth(localindex_thiddepth) = 0; %if there is not enough points to assess outlier status, we assume the data is good.
+                local_outliersfinal(localindex_thiddepth) = local_outliersfinal(localindex_thiddepth) & local_outliers_per_depth(localindex_thiddepth);
+                continue
+            end
+                  
+            Q1 = quantile(valsforIQR, 0.25);
+            Q3 = quantile(valsforIQR, 0.75);
+            IQR = Q3 - Q1;
+            lower = Q1 - om * IQR;
+            upper = Q3 + om * IQR;
+            is_out = (valsforIQR < lower) | (valsforIQR > upper); %outlier marked
+            
+            local_outliers_per_depth(localindex_thiddepth(~is_out)) = 0; %outliers remain as one in the timeseries.
+
+            % remove later. Troubleshooting. If the outlier detector is
+            % working, 311429 should always be identified as an outlier,
+            % because for each interation through that depth bin, the 20
+            % value should be flagged.
+
+
+            local_outliersfinal(localindex_thiddepth) = local_outliersfinal(localindex_thiddepth) & local_outliers_per_depth(localindex_thiddepth);
+             %As we iterate through all the depths, local_outliersfinal holds the outliers thoughout all depth iterations. local outliers carries the outliers for each depth.
+             
+
+         end
+    
+        % Combine with outer loop
+        outliersfinal = outliersfinal & local_outliersfinal; %once all depths are analyzed, outliers are recorded.
+        outliersfinal(allnans) = 0;
+             %% This is a helpful plot for seeing how the iteration goes while
+            %% chlorophyll-a is being QCed.
+            figure(1);
+            clf
+            
+            plot(time,temp)
+            xlim([t0 - dt_window/2 - dt_window/4,t0 + dt_window/2 + dt_window/4]) %this plot is our 3 day window plus a little extra on either side. This is shifted by 3 hours (which causeing the red markers to disappear as points are verified to not be outliers)
+            hold on
+            plot(time(outliersfinal),temp(outliersfinal),'o','Color','r')
+            plot([t0 - dt_window/2,t0 - dt_window/2],[max(temp),min(temp)],'--k') %this marks the trailing edge of our 3 day window.
+            plot([t0 + dt_window/2,t0 + dt_window/2],[max(temp),min(temp)],'--k') %this marks the leading edge of our 3 day window.
+            selectmissionnumbers=missionnumbers(Stationkeepingset);
+            title(['Mission ',char(string(selectmissionnumbers(eachmission))),' ' AllGliderVariablesnames{eachvariable}])
+            ylabel(AllGliderVariablesnames{eachvariable})
+            xlabel('Datenum')
+    end
+    
+    
+        outlierslogic{eachvariable}{eachmission}=outliersfinal;
         z_edges = 0:dz:ceil(max(depth));%looking at all depths here.
         [~, z_bin] = histc(depth, z_edges);
         nobin=z_bin==0; %this identifies all the depths that are nan, which includes shallow depths.
         good= ~nobin & ~ outlierslogic{eachvariable}{eachmission};
         if yes_plot_QCfigure == 1
-            figure(1);
+            figure(2);
+            clf
             plot(convrtdt(SK_GliderVariables{3}{eachmission}),temp,'.');
             hold on
             plot(convrtdt(SK_GliderVariables{3}{eachmission}(good)),temp(good),'o','Color',[0.9294    0.6941    0.1255])
             plot(convrtdt(SK_GliderVariables{3}{eachmission}(outlierslogic{eachvariable}{eachmission})),temp(outlierslogic{eachvariable}{eachmission}),'o','Color','r', 'MarkerFaceColor','r')
-            title(['Mission ',char(string(eachmission)),' ' AllGliderVariablesnames{eachvariable}])
+            selectmissionnumbers=missionnumbers(Stationkeepingset);
+            title(['Mission ',char(string(selectmissionnumbers(eachmission))),' ' AllGliderVariablesnames{eachvariable}])
             
-            legend('Original Data','Good (not shallow, not outliers)','Outliers')
-            saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable},'normalloop.png'])
-            saveas(figure(1),[QCfigurepath,char(string(eachmission)),AllGliderVariablesnames{eachvariable},'normalloop'])
-            clf 
-        end
+            if isempty(temp(outlierslogic{eachvariable}{eachmission}))
+                legend('Original Data','Good (not shallow, no outliers detected)')
+            else
+               legend('Original Data','Good (not shallow, not outliers)','Outliers')
+            end
+            saveas(figure(2),[QCfigurepath,char(string(selectmissionnumbers(eachmission))),AllGliderVariablesnames{eachvariable}, filenameappend,'.png'])
+            saveas(figure(2),[QCfigurepath,char(string(selectmissionnumbers(eachmission))),AllGliderVariablesnames{eachvariable}, filenameappend])
+            clf %enter a break point here if you want a quick view of the plots
+        end 
         temp(~good)=nan;
         tempAll{eachvariable}{eachmission}=temp;
+        
+    
     
      end
     
