@@ -30,8 +30,8 @@ close all
 clear all
 
 %% User config
-load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\QC_GC_1dayhalf_v9.mat')
-%load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\QC_GC_v7.mat','QC_GC') %load wherever the initial rolling window QC was saved.
+load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\QC_GC_v10.mat') %load wherever the initial rolling window QC was saved.
+ 
 
 %variable organization as loaded:
    % AllGliderVariables{1}=lats;
@@ -49,24 +49,31 @@ load('C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\QC_GC_1dayhalf_v9.m
     % AllGliderVariables{13}=Dfliv;
 
 placesnames{1}='PWS';
-placesnames{2}='GEO';
+placesnames{2}='GAK';
 placesnames{3}='GEO';
 placesnames{4}='GEO';
+placesnames{5}='GEO';
 
 
 
 filepacenames{1}='PWS2021_spring';
-filepacenames{2}='GEO2023_spring';
-filepacenames{3}='GEO2024_spring';
-filepacenames{4}='GEO2024_summer';
+filepacenames{2}='GAK2022_spring';
+filepacenames{3}='GEO2023_spring';
+filepacenames{4}='GEO2024_spring';
+filepacenames{5}='GEO2024_summer';
 
 
 
 QCdatasavepath='C:\Users\funkb\Documents\MATLAB\Research\data\Chapter3\';
-datafilename = 'QC_GCgridded_v5';
+datafilename = 'QC_GCgridded_v10';
 
 Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapter 3\Gridded_no_interp yet\';
 
+% Check the indices in the RAW METRICS section, to ensure that the metrics
+% you want correspond to the filepacenames/placenames. e.g. I have some
+% groupings for the GEO mooring glider missions specifically that have the
+% indicies hard-coded in. These will need to change if the missions in
+% QC_GC change order.
 
 %% housekeeping
 
@@ -105,9 +112,9 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
     
     %% some casts have very little data. Make a requirement that a cast must add up to at least 75% of the full depth to qualify as a cast.
     % some data is more consistent than others, but if salinity doesn't make up
-    % a full cast, we assume the rest do not either. The issue crops up a lot (40-50%) in Mission 3 and Mission 4 . 
-    %The main cause for this is due to sample scheme I think. Mission 4 and
-    %Mission 3 collected science data during the upcast only. The way the
+    % a full cast, we assume the rest do not either. The issue crops up a lot (40-50%) in some of the missions . 
+    %The main cause for this is due to sample scheme I think. the GEO 2024 and
+    %GEO 2023 missions collected science data during the upcast only. The way the
     %splitter works means a little bit of the data is registered after deep
     %turning point, and a little bit is registered before a surface turning
     %point. These then get temporarily identified as a 'a profile', which is
@@ -147,7 +154,7 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
     
     
     
-    %% here we get some "raw" metrics for the quality controlled data.
+    %% RAW METRICS: here we get some "raw" metrics for the quality controlled data.
     for eachmission=1:length(QC_GC)
         Totalcasts=length(QC_GC{eachmission});
         
@@ -185,8 +192,8 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
     
         
         %Centerpoint
-        lat_temp=[QC_GC{2}(1,:,1),QC_GC{3}(1,:,1),QC_GC{4}(1,:,1)];
-        lon_temp=[QC_GC{2}(1,:,2),QC_GC{3}(1,:,2),QC_GC{4}(1,:,2)];
+        lat_temp=[QC_GC{3}(1,:,1),QC_GC{4}(1,:,1),QC_GC{5}(1,:,1)];
+        lon_temp=[QC_GC{3}(1,:,2),QC_GC{4}(1,:,2),QC_GC{5}(1,:,2)];
         Totalcasts=length(lat_temp);
         nolat=isnan(lat_temp);
         nolon=isnan(lon_temp);
@@ -208,16 +215,16 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
         
         timestamps=[QC_GC{1}(1,:,3)];
         %timestamps2prep=[QC_GC{2}(1,:,3),QC_GC{3}(1,:,3),QC_GC{4}(1,:,3)];
-        timestamps2prep=[QC_GC{2}(1,:,3),QC_GC{3}(1,:,3)];
+        timestamps2prep=[QC_GC{3}(1,:,3),QC_GC{4}(1,:,3)];
         %timestamps2prep=[QC_GC{4}(1,:,3)];
         %stamplogic=timestamps2prep<datenum(datetime(2024,07,10));
         %timestamps2=timestamps2prep(stamplogic);
         timestamps2=timestamps2prep;
-        timestamps2test=[QC_GC{2}(:,:,3),QC_GC{3}(:,:,3),QC_GC{4}(:,:,3)];
-        mydepth2test=([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5),QC_GC{4}(:,:,5)]);
+        timestamps2test=[QC_GC{3}(:,:,3),QC_GC{4}(:,:,3),QC_GC{5}(:,:,3)];
+        mydepth2test=([QC_GC{3}(:,:,5),QC_GC{4}(:,:,5),QC_GC{5}(:,:,5)]);
         %timestamps2=[QC_GC{2}(1,:,3)]; 
 
-        %OK so on July 10th we changed our sampling from every 40ish
+        %OK so on July 10th 2024 we changed our sampling from every 40ish
         %minutes to twice every 4 hours or something like that. So the main
         %part of our study is going to be previous to July 10th
 
@@ -255,7 +262,7 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
     
         depthmax=max([QC_GC{1}(:,:,5)]);
         %depthmax2=max([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5),QC_GC{4}(:,:,5)]);
-        depthmax2=max([QC_GC{2}(:,:,5),QC_GC{3}(:,:,5)]);
+        depthmax2=max([QC_GC{3}(:,:,5),QC_GC{4}(:,:,5)]);
         %depthmax2=max([QC_GC{4}(:,:,5)]);
         remove=difftimes>hours(24);
         remove2=difftimes2>hours(24);
@@ -278,8 +285,8 @@ Prelimplotfilesavepath= 'C:\Users\funkb\Documents\MATLAB\Research\Figures\Chapte
         % complete. A profile is half of a dive, so that 15 minutes. Add in the
         % occasional short dive and you get about 15 minutes for a dive.
     
-        mytiles=tiledlayout(2,2);
-        for eachmission=1:4
+        mytiles=tiledlayout(2,3);
+        for eachmission=1:5
             nexttile
         missiontrtime=QC_GC{eachmission}(:,40:50,3);
         PWStrdepth=QC_GC{eachmission}(:,40:50,5);
@@ -371,7 +378,7 @@ filenamevarsnames{14}='Pressure';
 filenamevarsnames{15}='Conductivity';
 
 
-
+figure()
 for eachmission=1:length(QC_GCgridded)
     for eachvar=[4,6,7,8,9,10,11,12,13,14]
         [gridtimes, griddepths]=meshgrid((bin_edges{eachmission}(1:end-1)),0:299);
